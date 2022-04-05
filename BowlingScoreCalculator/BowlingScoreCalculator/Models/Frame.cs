@@ -8,7 +8,6 @@ namespace BowlingLogic2021
 {
     public class Frame
     {
-        public Frame() {}
         public Frame(int frameNumber)
         {
             Number = frameNumber;

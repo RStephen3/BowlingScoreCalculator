@@ -10,69 +10,35 @@ namespace BowlingLogic2021
 {
     public class ScoringLogic
     {
-        public static void ShotLogic(Game game, string ballText, int frameNumber, int ballNumber)
-        {
-            switch (frameNumber)
-            {
-                case 1:
-                    getBallValue(game, game.Frame1, ballNumber, ballText);
-                    break;
-                case 2:
-                    getBallValue(game, game.Frame2, ballNumber, ballText);
-                    break;
-                case 3:
-                    getBallValue(game, game.Frame3, ballNumber, ballText);
-                    break;
-                case 4:
-                    getBallValue(game, game.Frame4, ballNumber, ballText);
-                    break;
-                case 5:
-                    getBallValue(game, game.Frame5, ballNumber, ballText);
-                    break;
-                case 6:
-                    getBallValue(game, game.Frame6, ballNumber, ballText);
-                    break;
-                case 7:
-                    getBallValue(game, game.Frame7, ballNumber, ballText);
-                    break;
-                case 8:
-                    getBallValue(game, game.Frame8, ballNumber, ballText);
-                    break;
-                case 9:
-                    getBallValue(game, game.Frame9, ballNumber, ballText);
-                    break;
-                case 10:
-                    getBallValue(game, game.Frame10, ballNumber, ballText);
-                    break;
-            }
-        }
-        private static void getBallValue(Game game, Frame frame, int ballNumber, string ballText)
+        public static void ShotLogic(Game game, string ballText, Frame currFrame, int ballNumber)
         {
             //Get value of shot thrown
             switch (ballNumber)
             {
                 case 1:
-                    getFirstBallValue(frame, ballText);
+                    getFirstBallValue(currFrame, ballText);
                     break;
                 case 2:
-                    getSecondBallValue(frame, ballText);
+                    getSecondBallValue(currFrame, ballText);
                     break;
                 case 3:
-                    getThirdBallValue(frame, ballText);
+                    getThirdBallValue(currFrame, ballText);
                     break;
             }
             //TODO: Instead of grabbing previous frame and previous previous freame, just recalculate the whole game each time a score is made. 
-            foreach(Frame currFrame in game.F)
-            {
-
-            }
-            Frame prevFrame = game.GetPrevFrame(frame.Number);
+            //foreach (Frame frame in game.Frames)
+            //{
+            //    if (!frame.IsScoringComplete)
+            //    {
+            Frame prevFrame = game.GetFrame(currFrame.Number - 1);
             if (prevFrame != null)
-                frame.Score += prevFrame.Score;
+                currFrame.Score += prevFrame.Score;
             if (ballNumber == 3)
-                frame.Score += frame.ThirdBall.Value;
+                currFrame.Score += currFrame.ThirdBall.Value;
             else
-                checkPreviousFrames(game, frame, ballNumber);
+                checkPreviousFrames(game, currFrame, ballNumber);
+            //    }
+            //}
         }
         private static void getFirstBallValue(Frame frame, string ballText)
         {
@@ -94,7 +60,7 @@ namespace BowlingLogic2021
         }
         private static void getSecondBallValue(Frame frame, string ballText)
         {
-            frame.SecondBall.MarkType = getSecondBallMarkType(frame.FirstBall.Value, ballText);
+            frame.SecondBall.MarkType = getMarkType(ballText);
             switch (frame.SecondBall.MarkType)
             {
                 case eMarkType.Strike:
@@ -144,31 +110,37 @@ namespace BowlingLogic2021
         }
         private static void checkPreviousFrames(Game game, Frame currFrame, int ballNumber)
         {
-            Frame prevFrame = game.GetPrevFrame(currFrame.Number);
+            Frame prevFrame = game.GetFrame(currFrame.Number - 1);
             if (prevFrame != null && prevFrame.MarkType != eMarkType.Open)
             {
                 if (prevFrame.MarkType == eMarkType.Strike)
                 {
-                    Frame prevprevFrame = game.GetPrevFrame(prevFrame.Number);
+                    Frame prevprevFrame = game.GetFrame(prevFrame.Number - 1);
                     if (prevprevFrame != null && prevprevFrame.MarkType != eMarkType.Open)
                     {
                         if (prevprevFrame.MarkType == eMarkType.Strike)
                         {
                             //when we are on a double
-                            prevprevFrame.Score = game.GetTotalScore(prevprevFrame.Number, currFrame.FirstBall.Value);
-                            prevFrame.Score = game.GetTotalScore(prevFrame.Number, currFrame.FirstBall.Value);
-                            currFrame.Score = game.GetTotalScore(currFrame.Number, currFrame.FirstBall.Value);
+                            prevprevFrame.Score = game.GetTotalScore(prevprevFrame, currFrame.FirstBall.Value);
+                            prevprevFrame.IsScoringComplete = true;
+                            prevFrame.Score = game.GetTotalScore(prevFrame, currFrame.FirstBall.Value);
+                            currFrame.Score = game.GetTotalScore(currFrame, currFrame.FirstBall.Value);
+                        }
+                        else
+                        {
+                            prevFrame.IsScoringComplete = true;
                         }
                     }
                     //when prev frame is a strike
-                    prevFrame.Score = game.GetTotalScore(prevFrame.Number, currFrame.FirstBall.Value);
-                    currFrame.Score = game.GetTotalScore(currFrame.Number, currFrame.FirstBall.Value);
+                    prevFrame.Score = game.GetTotalScore(prevFrame, currFrame.FirstBall.Value);
+                    currFrame.Score = game.GetTotalScore(currFrame, currFrame.FirstBall.Value);
                 }
                 else if (prevFrame.MarkType == eMarkType.Spare)
                 {
                     //when prev frame is a spare
-                    prevFrame.Score = game.GetTotalScore(prevFrame.Number, currFrame.FirstBall.Value);
-                    currFrame.Score = game.GetTotalScore(currFrame.Number, currFrame.FirstBall.Value);
+                    prevFrame.Score = game.GetTotalScore(prevFrame, currFrame.FirstBall.Value);
+                    prevFrame.IsScoringComplete = true;
+                    currFrame.Score = game.GetTotalScore(currFrame, currFrame.FirstBall.Value);
                 }
             }
         }
@@ -202,13 +174,6 @@ namespace BowlingLogic2021
                 default:
                     return eMarkType.Open;
             }
-        }
-        private static eMarkType getSecondBallMarkType(int firstBall, string ballValue)
-        {
-            bool isInt = int.TryParse(ballValue, out int intBallVal);
-            if (isInt && firstBall + intBallVal == 10)
-                return eMarkType.Spare;
-            return getMarkType(ballValue);
         }
     }
 }

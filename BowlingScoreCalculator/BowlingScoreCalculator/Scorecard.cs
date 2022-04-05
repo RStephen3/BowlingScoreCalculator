@@ -554,30 +554,43 @@ namespace BowlingLogic2021
             frameNumber = int.Parse(frameBall[0].Replace("frame", ""));
             ballNumber = int.Parse(frameBall[1].Replace("Ball", ""));
 
+            if (game.GetFrame(frameNumber) == null)
+                game.Frames.Add(new Frame(frameNumber));
+            Frame currFrame = game.GetFrame(frameNumber);
+
             int ballValue;
 
             if (textBox.Text == "x")
                 textBox.Text = "X";
             else if (textBox.Text == "0" && ballNumber != 1)
                 textBox.Text = "-";
-            else if (!int.TryParse(textBox.Text, out ballValue) || (ballValue < 0 || ballValue > 9))
+            else if (textBox.Text != "/")
             {
-                MessageBox.Show(this, "Please enter a valid score");
-                textBox.Text = "";
-                eventInProgress = false;
-                return;
+                bool isInt = int.TryParse(textBox.Text, out ballValue);
+                if (!isInt || (ballValue < 0 || ballValue > 9))
+                {
+                    MessageBox.Show(this, "Please enter a valid score");
+                    textBox.Text = "";
+                    eventInProgress = false;
+                    return;
+                }
+                else
+                {
+                    if (currFrame.FirstBall.Value + ballValue == 10)
+                        textBox.Text = "/";
+                }
             }
 
             try
             {
-                ScoringLogic.ShotLogic(game, textBox.Text, frameNumber, ballNumber);
+                ScoringLogic.ShotLogic(game, textBox.Text, currFrame, ballNumber);
                 switch (frameNumber)
                 {
                     case 1:
-                        this.frame1Score.Text = game.Frame1.Score.ToString();
+                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
                         this.frame1Score.BackColor = this.frame1Score.BackColor;
-                        this.frame1Score.ForeColor = (game.Frame1.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame1.FirstBall.MarkType == eMarkType.Strike || game.Frame1.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame1Score.ForeColor = (game.GetFrame(1).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(1).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(1).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame2_Ball1.Enabled = true;
                             this.frame2_Ball1.Select();
@@ -590,11 +603,11 @@ namespace BowlingLogic2021
                         // this.frame1_Ball2.Enabled = !(game.Frame1.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 2:
-                        this.frame1Score.Text = game.Frame1.Score.ToString();
-                        this.frame2Score.Text = game.Frame2.Score.ToString();
+                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
+                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
                         this.frame2Score.BackColor = this.frame2Score.BackColor;
-                        this.frame2Score.ForeColor = (game.Frame2.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame2.FirstBall.MarkType == eMarkType.Strike || game.Frame2.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame2Score.ForeColor = (game.GetFrame(2).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(2).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(2).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame3_Ball1.Enabled = true;
                             this.frame3_Ball1.Select();
@@ -607,12 +620,12 @@ namespace BowlingLogic2021
                         // this.frame2_Ball2.Enabled = !(game.Frame2.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 3:
-                        this.frame1Score.Text = game.Frame1.Score.ToString();
-                        this.frame2Score.Text = game.Frame2.Score.ToString();
-                        this.frame3Score.Text = game.Frame3.Score.ToString();
+                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
+                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
+                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
                         this.frame3Score.BackColor = this.frame3Score.BackColor;
-                        this.frame3Score.ForeColor = (game.Frame3.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame3.FirstBall.MarkType == eMarkType.Strike || game.Frame3.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame3Score.ForeColor = (game.GetFrame(3).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(3).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(3).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame4_Ball1.Enabled = true;
                             this.frame4_Ball1.Select();
@@ -625,12 +638,12 @@ namespace BowlingLogic2021
                         // this.frame3_Ball2.Enabled = !(game.Frame3.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 4:
-                        this.frame2Score.Text = game.Frame2.Score.ToString();
-                        this.frame3Score.Text = game.Frame3.Score.ToString();
-                        this.frame4Score.Text = game.Frame4.Score.ToString();
+                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
+                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
+                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
                         this.frame4Score.BackColor = this.frame4Score.BackColor;
-                        this.frame4Score.ForeColor = (game.Frame4.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame4.FirstBall.MarkType == eMarkType.Strike || game.Frame4.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame4Score.ForeColor = (game.GetFrame(4).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(4).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(4).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame5_Ball1.Enabled = true;
                             this.frame5_Ball1.Select();
@@ -643,12 +656,12 @@ namespace BowlingLogic2021
                         // this.frame4_Ball2.Enabled = !(game.Frame4.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 5:
-                        this.frame3Score.Text = game.Frame3.Score.ToString();
-                        this.frame4Score.Text = game.Frame4.Score.ToString();
-                        this.frame5Score.Text = game.Frame5.Score.ToString();
+                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
+                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
+                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
                         this.frame5Score.BackColor = this.frame5Score.BackColor;
-                        this.frame5Score.ForeColor = (game.Frame5.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame5.FirstBall.MarkType == eMarkType.Strike || game.Frame5.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame5Score.ForeColor = (game.GetFrame(5).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(5).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(5).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame6_Ball1.Enabled = true;
                             this.frame6_Ball1.Select();
@@ -661,12 +674,12 @@ namespace BowlingLogic2021
                         // this.frame5_Ball2.Enabled = !(game.Frame5.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 6:
-                        this.frame4Score.Text = game.Frame4.Score.ToString();
-                        this.frame5Score.Text = game.Frame5.Score.ToString();
-                        this.frame6Score.Text = game.Frame6.Score.ToString();
+                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
+                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
+                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
                         this.frame6Score.BackColor = this.frame6Score.BackColor;
-                        this.frame6Score.ForeColor = (game.Frame6.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame6.FirstBall.MarkType == eMarkType.Strike || game.Frame6.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame6Score.ForeColor = (game.GetFrame(6).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(6).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(6).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame7_Ball1.Enabled = true;
                             this.frame7_Ball1.Select();
@@ -679,12 +692,12 @@ namespace BowlingLogic2021
                         // this.frame6_Ball2.Enabled = !(game.Frame6.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 7:
-                        this.frame5Score.Text = game.Frame5.Score.ToString();
-                        this.frame6Score.Text = game.Frame6.Score.ToString();
-                        this.frame7Score.Text = game.Frame7.Score.ToString();
+                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
+                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
+                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
                         this.frame7Score.BackColor = this.frame7Score.BackColor;
-                        this.frame7Score.ForeColor = (game.Frame7.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame7.FirstBall.MarkType == eMarkType.Strike || game.Frame7.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame7Score.ForeColor = (game.GetFrame(7).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(7).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(7).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame8_Ball1.Enabled = true;
                             this.frame8_Ball1.Select();
@@ -697,12 +710,12 @@ namespace BowlingLogic2021
                         // this.frame7_Ball2.Enabled = !(game.Frame7.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 8:
-                        this.frame6Score.Text = game.Frame6.Score.ToString();
-                        this.frame7Score.Text = game.Frame7.Score.ToString();
-                        this.frame8Score.Text = game.Frame8.Score.ToString();
+                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
+                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
+                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
                         this.frame8Score.BackColor = this.frame8Score.BackColor;
-                        this.frame8Score.ForeColor = (game.Frame8.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame8.FirstBall.MarkType == eMarkType.Strike || game.Frame8.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame8Score.ForeColor = (game.GetFrame(8).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(8).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(8).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame9_Ball1.Enabled = true;
                             this.frame9_Ball1.Select();
@@ -715,12 +728,12 @@ namespace BowlingLogic2021
                         // this.frame8_Ball2.Enabled = !(game.Frame8.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 9:
-                        this.frame7Score.Text = game.Frame7.Score.ToString();
-                        this.frame8Score.Text = game.Frame8.Score.ToString();
-                        this.frame9Score.Text = game.Frame9.Score.ToString();
+                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
+                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
+                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
                         this.frame9Score.BackColor = this.frame9Score.BackColor;
-                        this.frame9Score.ForeColor = (game.Frame9.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame9.FirstBall.MarkType == eMarkType.Strike || game.Frame9.SecondBall.MarkType != eMarkType.NotThrown)
+                        this.frame9Score.ForeColor = (game.GetFrame(9).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(9).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(9).SecondBall.MarkType != eMarkType.NotThrown)
                         {
                             this.frame10_Ball1.Enabled = true;
                             this.frame10_Ball1.Select();
@@ -733,19 +746,19 @@ namespace BowlingLogic2021
                         // this.frame9_Ball2.Enabled = !(game.Frame9.FirstBall.MarkType == eMarkType.Strike);
                         break;
                     case 10:
-                        this.frame8Score.Text = game.Frame8.Score.ToString();
-                        this.frame9Score.Text = game.Frame9.Score.ToString();
-                        this.frame10Score.Text = game.Frame10.Score.ToString();
+                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
+                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
+                        this.frame10Score.Text = game.GetFrame(10).Score.ToString();
                         this.frame10Score.BackColor = this.frame10Score.BackColor;
-                        this.frame10Score.ForeColor = (game.Frame10.IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.Frame10.FirstBall.MarkType != eMarkType.NotThrown && game.Frame10.SecondBall.MarkType == eMarkType.NotThrown)
+                        this.frame10Score.ForeColor = (game.GetFrame(10).IsScoringComplete) ? Color.Black : Color.Gray;
+                        if (game.GetFrame(10).FirstBall.MarkType != eMarkType.NotThrown && game.GetFrame(10).SecondBall.MarkType == eMarkType.NotThrown)
                         {
                             this.frame10_Ball2.Enabled = true;
                             this.frame10_Ball2.Select();
                         }
                         else
                         {
-                            if (game.Frame10.FirstBall.MarkType == eMarkType.Strike || game.Frame10.SecondBall.MarkType == eMarkType.Spare)
+                            if (game.GetFrame(10).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(10).SecondBall.MarkType == eMarkType.Spare)
                             { //if we really should be in the third ball
                                 this.frame10_Ball3.Enabled = true;
                                 this.frame10_Ball3.Select();
