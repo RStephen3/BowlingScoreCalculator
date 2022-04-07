@@ -13,11 +13,11 @@ namespace BowlingLogic2021
     public partial class Scorecard : Form
     {
         #region Form Components
+        public Game game;
         public Scorecard()
         {
             InitializeComponent();
         }
-        public Game game = new Game();
 
         private TextBox frame1_Ball1;
         private TextBox frame1_Ball2;
@@ -77,6 +77,9 @@ namespace BowlingLogic2021
 
         private void InitializeComponent()
         {
+            game = new Game();
+            ScoringLogic.game = game;
+
             this.frame1_Ball1 = new System.Windows.Forms.TextBox();
             this.frame1_Ball2 = new System.Windows.Forms.TextBox();
             this.frame2_Ball1 = new System.Windows.Forms.TextBox();
@@ -554,9 +557,8 @@ namespace BowlingLogic2021
             frameNumber = int.Parse(frameBall[0].Replace("frame", ""));
             ballNumber = int.Parse(frameBall[1].Replace("Ball", ""));
 
-            if (game.GetFrame(frameNumber) == null)
-                game.Frames.Add(new Frame(frameNumber));
             Frame currFrame = game.GetFrame(frameNumber);
+            MarkFutureFramesAsDirty(currFrame);
 
             int ballValue;
 
@@ -576,16 +578,29 @@ namespace BowlingLogic2021
                 }
                 else
                 {
-                    if (currFrame.FirstBall.Value + ballValue == 10)
+                    if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
                         textBox.Text = "/";
                 }
             }
 
             try
             {
-                ScoringLogic.ShotLogic(game, textBox.Text, currFrame, ballNumber);
+                bool updateScoreCard = ScoringLogic.ShotLogic(textBox.Text, currFrame, ballNumber);
+                if (updateScoreCard) frameNumber = 0;
                 switch (frameNumber)
                 {
+                    case 0:
+                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
+                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
+                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
+                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
+                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
+                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
+                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
+                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
+                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
+                        this.frame10Score.Text = game.GetFrame(10).Score.ToString();
+                        break;
                     case 1:
                         this.frame1Score.Text = game.GetFrame(1).Score.ToString();
                         this.frame1Score.BackColor = this.frame1Score.BackColor;
@@ -759,7 +774,7 @@ namespace BowlingLogic2021
                         else
                         {
                             if (game.GetFrame(10).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(10).SecondBall.MarkType == eMarkType.Spare)
-                            { //if we really should be in the third ball
+                            { // check to ensure we are supposed to be on the third ball
                                 this.frame10_Ball3.Enabled = true;
                                 this.frame10_Ball3.Select();
                             }
@@ -775,6 +790,13 @@ namespace BowlingLogic2021
                 this.errorMessage.Text = ex.Message;
             }
             eventInProgress = false;
+        }
+        private void MarkFutureFramesAsDirty(Frame frame)
+        {
+            for (int i = frame.Number; i <= 10; i++)
+            {
+                game.GetFrame(i).IsScoringComplete = false;
+            }
         }
     }
 }

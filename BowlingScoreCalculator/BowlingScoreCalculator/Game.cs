@@ -11,6 +11,16 @@ namespace BowlingLogic2021
         public Game()
         {
             Frames = new List<Frame>();
+            Frames.Add(new Frame(1));
+            Frames.Add(new Frame(2));
+            Frames.Add(new Frame(3));
+            Frames.Add(new Frame(4));
+            Frames.Add(new Frame(5));
+            Frames.Add(new Frame(6));
+            Frames.Add(new Frame(7));
+            Frames.Add(new Frame(8));
+            Frames.Add(new Frame(9));
+            Frames.Add(new Frame(10));
         }
         public List<Frame> Frames { get; set; }
         public int TotalScore { get; set; }
@@ -24,11 +34,10 @@ namespace BowlingLogic2021
             }
             return null;
         }
-        public int GetTotalScore(Frame frame, int firstBallValue = 0)
+        public void GetTotalScore(Frame frame, int firstBallValue = 0)
         {
             if (!frame.IsScoringComplete)
-                return frame.Score + firstBallValue;
-            return frame.Score;
+                frame.Score = frame.Score + firstBallValue;
         }
     }
 }
