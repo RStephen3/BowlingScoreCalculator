@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1F468CBC-4DC7-4B04-9480-2F358B9E6243}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>BowlingLogic2021</RootNamespace>
-    <AssemblyName>BowlingLogic2021</AssemblyName>
+    <RootNamespace>BowlingScoreCalculator</RootNamespace>
+    <AssemblyName>BowlingScoreCalculator</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -69,6 +69,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

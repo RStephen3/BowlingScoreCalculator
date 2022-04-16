@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-// Currently getting 310 or 290 for 300. Something with 3rd ball. 
-namespace BowlingLogic2021
+namespace BowlingScoreCalculator
 {
     public class ScoringLogic
     {
@@ -47,6 +46,7 @@ namespace BowlingLogic2021
         {
             if (frame.FirstBall.Value != 0 && !updateEntireScore)
             {
+                frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 1);
             }
             frame.FirstBall.MarkType = getMarkType(ballText);
@@ -70,6 +70,7 @@ namespace BowlingLogic2021
         {
             if (frame.SecondBall.Value != 0 && !updateEntireScore)
             {
+                frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 2);
             }
             frame.SecondBall.MarkType = getMarkType(ballText);
@@ -92,7 +93,10 @@ namespace BowlingLogic2021
                     else
                         frame.SecondBall.Value = int.Parse(ballText);
                     if (frame.FirstBall.Value + frame.SecondBall.Value > 10)
+                    {
+                        frame.SecondBall.Value = 0;
                         throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+                    }
                     openLogic(frame, true);
                     frame.Score = frame.FirstBall.Value + frame.SecondBall.Value;
                     break;
@@ -102,6 +106,7 @@ namespace BowlingLogic2021
         {
             if (frame.ThirdBall.Value != 0 && !updateEntireScore)
             {
+                frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 3);
             }
             frame.ThirdBall.MarkType = getMarkType(ballText);
@@ -181,29 +186,38 @@ namespace BowlingLogic2021
                     switch (i)
                     {
                         case 1:
-                            ballText = frame.FirstBall.Value.ToString();
-                            if (frame.FirstBall.MarkType == eMarkType.Strike)
-                                ballText = "X";
+                            if (frame.FirstBall.MarkType != eMarkType.NotThrown)
+                            {
+                                ballText = frame.FirstBall.Value.ToString();
+                                if (frame.FirstBall.MarkType == eMarkType.Strike)
+                                    ballText = "X";
 
-                            ShotLogic(ballText, frame, 1, true);
+                                ShotLogic(ballText, frame, 1, true);
+                            }
                             break;
                         case 2:
-                            ballText = frame.SecondBall.Value.ToString();
-                            if (frame.SecondBall.MarkType == eMarkType.Strike)
-                                ballText = "X";
-                            else if (frame.SecondBall.MarkType == eMarkType.Spare)
-                                ballText = "/";
-                            ShotLogic(ballText, frame, 2, true);
+                            if (frame.SecondBall.MarkType != eMarkType.NotThrown)
+                            {
+                                ballText = frame.SecondBall.Value.ToString();
+                                if (frame.SecondBall.MarkType == eMarkType.Strike)
+                                    ballText = "X";
+                                else if (frame.SecondBall.MarkType == eMarkType.Spare)
+                                    ballText = "/";
+                                ShotLogic(ballText, frame, 2, true);
+                            }
                             break;
                         case 3:
                             if (frame.Number == 10)
                             {
-                                ballText = frame.ThirdBall.Value.ToString();
-                                if (frame.ThirdBall.MarkType == eMarkType.Strike)
-                                    ballText = "X";
-                                else if (frame.ThirdBall.MarkType == eMarkType.Spare)
-                                    ballText = "/";
-                                ShotLogic(ballText, frame, 3, true);
+                                if (frame.ThirdBall.MarkType != eMarkType.NotThrown)
+                                {
+                                    ballText = frame.ThirdBall.Value.ToString();
+                                    if (frame.ThirdBall.MarkType == eMarkType.Strike)
+                                        ballText = "X";
+                                    else if (frame.ThirdBall.MarkType == eMarkType.Spare)
+                                        ballText = "/";
+                                    ShotLogic(ballText, frame, 3, true);
+                                }
                             }
                             break;
                     }

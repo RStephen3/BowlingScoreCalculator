@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BowlingLogic2021
+namespace BowlingScoreCalculator
 {
     public partial class Scorecard : Form
     {
@@ -560,47 +560,61 @@ namespace BowlingLogic2021
             Frame currFrame = game.GetFrame(frameNumber);
             MarkFutureFramesAsDirty(currFrame);
 
-            int ballValue;
-
-            if (textBox.Text == "x")
-                textBox.Text = "X";
-            else if (textBox.Text == "0" && ballNumber != 1)
-                textBox.Text = "-";
-            else if (textBox.Text != "/")
+            try
             {
-                bool isInt = int.TryParse(textBox.Text, out ballValue);
-                if (!isInt || (ballValue < 0 || ballValue > 9))
-                {
-                    MessageBox.Show(this, "Please enter a valid score");
-                    textBox.Text = "";
-                    eventInProgress = false;
-                    return;
-                }
-                else
-                {
-                    if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
-                        textBox.Text = "/";
-                }
+                textBox.Text = ValidateText(textBox.Text, currFrame, ballNumber);
             }
+            catch (Exception ex)
+            {
+                textBox.Text = "";
+                this.errorMessage.Text = ex.Message;
+                eventInProgress = false;
+                return;
+            }
+            //if (ballNumber == 1 && textBox.Text == "x")
+            //    textBox.Text = "X";
+            //else if (textBox.Text == "0" && ballNumber != 1)
+            //    textBox.Text = "-";
+            //else if (ballNumber == 2 && textBox.Text != "/")
+            //{
+            //    bool isInt = int.TryParse(textBox.Text, out ballValue);
+            //    if (!isInt || (ballValue < 0 || ballValue > 9))
+            //    {
+            //        MessageBox.Show(this, "Please enter a valid score");
+            //        textBox.Text = "";
+            //        eventInProgress = false;
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
+            //            textBox.Text = "/";
+            //    }
+            //}
+            //if (currFrame.FirstBall.Value + currFrame.SecondBall.Value > 10)
+            //{
+            //    currFrame.SecondBall.Value = 0;
+            //    throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+            //}
 
             try
             {
                 bool updateScoreCard = ScoringLogic.ShotLogic(textBox.Text, currFrame, ballNumber);
-                if (updateScoreCard) frameNumber = 0;
+                if (updateScoreCard)
+                {
+                    this.frame1Score.Text = game.GetFrame(1).Score.ToString();
+                    this.frame2Score.Text = game.GetFrame(2).Score.ToString();
+                    this.frame3Score.Text = game.GetFrame(3).Score.ToString();
+                    this.frame4Score.Text = game.GetFrame(4).Score.ToString();
+                    this.frame5Score.Text = game.GetFrame(5).Score.ToString();
+                    this.frame6Score.Text = game.GetFrame(6).Score.ToString();
+                    this.frame7Score.Text = game.GetFrame(7).Score.ToString();
+                    this.frame8Score.Text = game.GetFrame(8).Score.ToString();
+                    this.frame9Score.Text = game.GetFrame(9).Score.ToString();
+                    this.frame10Score.Text = game.GetFrame(10).Score.ToString();
+                }
                 switch (frameNumber)
                 {
-                    case 0:
-                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
-                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
-                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
-                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
-                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
-                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
-                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
-                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
-                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
-                        this.frame10Score.Text = game.GetFrame(10).Score.ToString();
-                        break;
                     case 1:
                         this.frame1Score.Text = game.GetFrame(1).Score.ToString();
                         this.frame1Score.BackColor = this.frame1Score.BackColor;
@@ -790,6 +804,49 @@ namespace BowlingLogic2021
                 this.errorMessage.Text = ex.Message;
             }
             eventInProgress = false;
+        }
+        private string ValidateText(string ballText, Frame currFrame, int ballNumber)
+        {
+            int ballValue;
+            if (ballText == "x")
+            {
+                if (ballNumber != 1 && currFrame.Number != 10)
+                    throw new Exception("Please enter a valid score");
+                else if (ballNumber == 2 && currFrame.Number == 10 && currFrame.FirstBall.MarkType != eMarkType.Strike)
+                    throw new Exception("Please enter a valid score");
+                else if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.MarkType != eMarkType.Strike)
+                    throw new Exception("Please enter a valid score");
+                ballText = "X";
+            }
+            else if (ballText == "0")
+                ballText = "-";
+            else if (ballText == "/")
+            {
+                if (ballNumber == 1)
+                    throw new Exception("Please enter a valid score");
+                else if (ballNumber == 2 && currFrame.Number == 10 && currFrame.FirstBall.MarkType == eMarkType.Strike)
+                    throw new Exception("Please enter a valid score");
+                else if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.MarkType == eMarkType.Strike)
+                    throw new Exception("Please enter a valid score");
+            }
+            else
+            {
+                bool isInt = int.TryParse(ballText, out ballValue);
+                if (!isInt || (ballValue < 0 || ballValue > 9))
+                    throw new Exception("Please enter a valid score");
+                if (ballNumber != 1 && ballText != "/")
+                {
+                    if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
+                        ballText = "/";
+                    else if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue > 10)
+                        throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+                    if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.Value + ballValue == 10)
+                        ballText = "/";
+                    else if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.Value + ballValue > 10)
+                        throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+                }
+            }
+            return ballText;
         }
         private void MarkFutureFramesAsDirty(Frame frame)
         {

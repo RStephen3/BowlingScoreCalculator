@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BowlingLogic2021
+namespace BowlingScoreCalculator
 {
     public class Ball
     {
