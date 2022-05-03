@@ -34,7 +34,9 @@ namespace BowlingScoreCalculator
             }
             else
             {
-                updatePreviousFrames(currFrame, ballNumber);
+                if ((ballNumber == 1 && currFrame.FirstBall.MarkType == eMarkType.Strike) ||
+                    ballNumber == 2 || currFrame.Number == 10)
+                    updatePreviousFrames(currFrame, ballNumber);
 
                 Frame prevFrame = game.GetFrame(currFrame.Number - 1);
                 if (prevFrame != null)
@@ -44,7 +46,7 @@ namespace BowlingScoreCalculator
         }
         private static void getFirstBallValue(Frame frame, string ballText)
         {
-            if (frame.FirstBall.Value != 0 && !updateEntireScore)
+            if (!updateEntireScore)
             {
                 frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 1);
@@ -57,7 +59,7 @@ namespace BowlingScoreCalculator
                     strikeLogic(frame);
                     break;
                 case eMarkType.Open:
-                    if (ballText == "-")
+                    if (ballText == "-" || ballText.ToLower() == "f")
                         frame.FirstBall.Value = 0;
                     else
                         frame.FirstBall.Value = int.Parse(ballText);
@@ -68,7 +70,7 @@ namespace BowlingScoreCalculator
         }
         private static void getSecondBallValue(Frame frame, string ballText)
         {
-            if (frame.SecondBall.Value != 0 && !updateEntireScore)
+            if (!updateEntireScore)
             {
                 frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 2);
@@ -88,23 +90,23 @@ namespace BowlingScoreCalculator
                     spareLogic(frame);
                     break;
                 case eMarkType.Open:
-                    if (ballText == "-")
+                    if (ballText == "-" || ballText.ToLower() == "f")
                         frame.SecondBall.Value = 0;
                     else
                         frame.SecondBall.Value = int.Parse(ballText);
-                    if (frame.FirstBall.Value + frame.SecondBall.Value > 10)
-                    {
-                        frame.SecondBall.Value = 0;
-                        throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
-                    }
-                    openLogic(frame, true);
+                    //if (frame.FirstBall.Value + frame.SecondBall.Value > 10)
+                    //{
+                    //    frame.SecondBall.Value = 0;
+                    //    throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+                    //}
+                    openLogic(frame, frame.Number != 10);
                     frame.Score = frame.FirstBall.Value + frame.SecondBall.Value;
                     break;
             }
         }
         private static void getThirdBallValue(Frame frame, string ballText)
         {
-            if (frame.ThirdBall.Value != 0 && !updateEntireScore)
+            if (!updateEntireScore)
             {
                 frame.MarkType = eMarkType.NotThrown;
                 MarkFramesDirty(frame, 3);
@@ -120,15 +122,15 @@ namespace BowlingScoreCalculator
                 case eMarkType.Spare:
                     frame.ThirdBall.Value = 10 - frame.FirstBall.Value;
                     spareLogic(frame);
-                    frame.Score = frame.FirstBall.Value + frame.SecondBall.Value + 10;
+                    frame.Score = frame.FirstBall.Value + frame.SecondBall.Value + (10 - frame.SecondBall.Value);
                     break;
                 case eMarkType.Open:
-                    if (ballText == "-")
+                    if (ballText == "-" || ballText.ToLower() == "f")
                         frame.ThirdBall.Value = 0;
                     else
                         frame.ThirdBall.Value = int.Parse(ballText);
-                    if (frame.FirstBall.Value + frame.SecondBall.Value > 10)
-                        throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
+                    //if (frame.FirstBall.Value + frame.SecondBall.Value > 10)
+                    //    throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
                     openLogic(frame, true);
                     frame.Score = frame.FirstBall.Value + frame.SecondBall.Value + frame.ThirdBall.Value;
                     break;
@@ -149,9 +151,9 @@ namespace BowlingScoreCalculator
                             //when we are on a double
                             game.GetTotalScore(prevprevFrame, currFrame.FirstBall.Value);
                             prevprevFrame.IsScoringComplete = true;
-                            if (currFrame.Number == 10 && ballNumber == 2 && currFrame.SecondBall.MarkType == eMarkType.Strike)
+                            if (currFrame.Number == 10 && ballNumber == 2)
                             {
-                                game.GetTotalScore(prevFrame, currFrame.FirstBall.Value);
+                                game.GetTotalScore(prevFrame, currFrame.SecondBall.Value);
                                 prevFrame.IsScoringComplete = true;
                             }
                             else
@@ -161,11 +163,11 @@ namespace BowlingScoreCalculator
                         }
                         else
                         {
-                            prevFrame.IsScoringComplete = true;
+                            prevprevFrame.IsScoringComplete = true;
                         }
                     }
                     //when prev frame is a strike
-                    game.GetTotalScore(prevFrame, currFrame.FirstBall.Value);
+                    game.GetTotalScore(prevFrame, currFrame.Number == 10 ? currFrame.FirstBall.Value : currFrame.FirstBall.Value + currFrame.SecondBall.Value);
                 }
                 else if (prevFrame.MarkType == eMarkType.Spare)
                 {

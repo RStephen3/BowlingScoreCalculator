@@ -542,9 +542,9 @@ namespace BowlingScoreCalculator
 
         }
         #endregion
-
         private void frameBall_TextChanged(object sender, EventArgs e)
         {
+            this.errorMessage.Text = "";
             if (eventInProgress) return;
             eventInProgress = true;
 
@@ -563,6 +563,16 @@ namespace BowlingScoreCalculator
             try
             {
                 textBox.Text = ValidateText(textBox.Text, currFrame, ballNumber);
+                if (ballNumber == 1)
+                {
+                    TextBox textBox2 = Controls.Find("frame" + currFrame.Number.ToString() + "_Ball" + (ballNumber + 1).ToString(), true)[0] as TextBox;
+                    if (textBox2.Enabled) textBox2.Text = "";
+                }
+                if (ballNumber == 2 && currFrame.Number == 10)
+                {
+                    TextBox textBox3 = Controls.Find("frame" + currFrame.Number.ToString() + "_Ball" + (ballNumber + 1).ToString(), true)[0] as TextBox;
+                    if (textBox3.Enabled) textBox3.Text = "";
+                }
             }
             catch (Exception ex)
             {
@@ -571,233 +581,50 @@ namespace BowlingScoreCalculator
                 eventInProgress = false;
                 return;
             }
-            //if (ballNumber == 1 && textBox.Text == "x")
-            //    textBox.Text = "X";
-            //else if (textBox.Text == "0" && ballNumber != 1)
-            //    textBox.Text = "-";
-            //else if (ballNumber == 2 && textBox.Text != "/")
-            //{
-            //    bool isInt = int.TryParse(textBox.Text, out ballValue);
-            //    if (!isInt || (ballValue < 0 || ballValue > 9))
-            //    {
-            //        MessageBox.Show(this, "Please enter a valid score");
-            //        textBox.Text = "";
-            //        eventInProgress = false;
-            //        return;
-            //    }
-            //    else
-            //    {
-            //        if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
-            //            textBox.Text = "/";
-            //    }
-            //}
-            //if (currFrame.FirstBall.Value + currFrame.SecondBall.Value > 10)
-            //{
-            //    currFrame.SecondBall.Value = 0;
-            //    throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
-            //}
 
             try
             {
-                bool updateScoreCard = ScoringLogic.ShotLogic(textBox.Text, currFrame, ballNumber);
-                if (updateScoreCard)
+                ScoringLogic.ShotLogic(textBox.Text, currFrame, ballNumber);
+                if (game.GetFrame(1).MarkType != eMarkType.NotThrown) this.frame1Score.Text = game.GetFrame(1).Score.ToString();
+                if (game.GetFrame(2).MarkType != eMarkType.NotThrown) this.frame2Score.Text = game.GetFrame(2).Score.ToString();
+                if (game.GetFrame(3).MarkType != eMarkType.NotThrown) this.frame3Score.Text = game.GetFrame(3).Score.ToString();
+                if (game.GetFrame(4).MarkType != eMarkType.NotThrown) this.frame4Score.Text = game.GetFrame(4).Score.ToString();
+                if (game.GetFrame(5).MarkType != eMarkType.NotThrown) this.frame5Score.Text = game.GetFrame(5).Score.ToString();
+                if (game.GetFrame(6).MarkType != eMarkType.NotThrown) this.frame6Score.Text = game.GetFrame(6).Score.ToString();
+                if (game.GetFrame(7).MarkType != eMarkType.NotThrown) this.frame7Score.Text = game.GetFrame(7).Score.ToString();
+                if (game.GetFrame(8).MarkType != eMarkType.NotThrown) this.frame8Score.Text = game.GetFrame(8).Score.ToString();
+                if (game.GetFrame(9).MarkType != eMarkType.NotThrown) this.frame9Score.Text = game.GetFrame(9).Score.ToString();
+                if (game.GetFrame(10).MarkType != eMarkType.NotThrown) this.frame10Score.Text = game.GetFrame(10).Score.ToString();
+
+                TextBox frameScore = Controls.Find("frame" + currFrame.Number.ToString() + "Score", true)[0] as TextBox;
+                frameScore.ForeColor = (currFrame.IsScoringComplete) ? Color.Black : Color.Gray;
+                TextBox nextBall;
+                if (currFrame.Number == 10)
                 {
-                    this.frame1Score.Text = game.GetFrame(1).Score.ToString();
-                    this.frame2Score.Text = game.GetFrame(2).Score.ToString();
-                    this.frame3Score.Text = game.GetFrame(3).Score.ToString();
-                    this.frame4Score.Text = game.GetFrame(4).Score.ToString();
-                    this.frame5Score.Text = game.GetFrame(5).Score.ToString();
-                    this.frame6Score.Text = game.GetFrame(6).Score.ToString();
-                    this.frame7Score.Text = game.GetFrame(7).Score.ToString();
-                    this.frame8Score.Text = game.GetFrame(8).Score.ToString();
-                    this.frame9Score.Text = game.GetFrame(9).Score.ToString();
-                    this.frame10Score.Text = game.GetFrame(10).Score.ToString();
+                    if (game.GetFrame(10).FirstBall.MarkType != eMarkType.NotThrown && game.GetFrame(10).SecondBall.MarkType == eMarkType.NotThrown)
+                    {
+                        nextBall = this.frame10_Ball2;
+                    }
+                    else
+                    {
+                        if (game.GetFrame(10).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(10).SecondBall.MarkType == eMarkType.Spare)
+                        { // check to ensure we are supposed to be on the third ball
+                            nextBall = this.frame10_Ball3;
+                        }
+                        else
+                            throw new Exception("The game is over! Your final Score is " + game.TotalScore.ToString());
+                    }
                 }
-                switch (frameNumber)
+                else
                 {
-                    case 1:
-                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
-                        this.frame1Score.BackColor = this.frame1Score.BackColor;
-                        this.frame1Score.ForeColor = (game.GetFrame(1).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(1).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(1).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame2_Ball1.Enabled = true;
-                            this.frame2_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame1_Ball2.Enabled = true;
-                            this.frame1_Ball2.Select();
-                        }
-                        // this.frame1_Ball2.Enabled = !(game.Frame1.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 2:
-                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
-                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
-                        this.frame2Score.BackColor = this.frame2Score.BackColor;
-                        this.frame2Score.ForeColor = (game.GetFrame(2).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(2).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(2).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame3_Ball1.Enabled = true;
-                            this.frame3_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame2_Ball2.Enabled = true;
-                            this.frame2_Ball2.Select();
-                        }
-                        // this.frame2_Ball2.Enabled = !(game.Frame2.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 3:
-                        this.frame1Score.Text = game.GetFrame(1).Score.ToString();
-                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
-                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
-                        this.frame3Score.BackColor = this.frame3Score.BackColor;
-                        this.frame3Score.ForeColor = (game.GetFrame(3).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(3).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(3).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame4_Ball1.Enabled = true;
-                            this.frame4_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame3_Ball2.Enabled = true;
-                            this.frame3_Ball2.Select();
-                        }
-                        // this.frame3_Ball2.Enabled = !(game.Frame3.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 4:
-                        this.frame2Score.Text = game.GetFrame(2).Score.ToString();
-                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
-                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
-                        this.frame4Score.BackColor = this.frame4Score.BackColor;
-                        this.frame4Score.ForeColor = (game.GetFrame(4).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(4).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(4).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame5_Ball1.Enabled = true;
-                            this.frame5_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame4_Ball2.Enabled = true;
-                            this.frame4_Ball2.Select();
-                        }
-                        // this.frame4_Ball2.Enabled = !(game.Frame4.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 5:
-                        this.frame3Score.Text = game.GetFrame(3).Score.ToString();
-                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
-                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
-                        this.frame5Score.BackColor = this.frame5Score.BackColor;
-                        this.frame5Score.ForeColor = (game.GetFrame(5).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(5).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(5).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame6_Ball1.Enabled = true;
-                            this.frame6_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame5_Ball2.Enabled = true;
-                            this.frame5_Ball2.Select();
-                        }
-                        // this.frame5_Ball2.Enabled = !(game.Frame5.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 6:
-                        this.frame4Score.Text = game.GetFrame(4).Score.ToString();
-                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
-                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
-                        this.frame6Score.BackColor = this.frame6Score.BackColor;
-                        this.frame6Score.ForeColor = (game.GetFrame(6).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(6).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(6).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame7_Ball1.Enabled = true;
-                            this.frame7_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame6_Ball2.Enabled = true;
-                            this.frame6_Ball2.Select();
-                        }
-                        // this.frame6_Ball2.Enabled = !(game.Frame6.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 7:
-                        this.frame5Score.Text = game.GetFrame(5).Score.ToString();
-                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
-                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
-                        this.frame7Score.BackColor = this.frame7Score.BackColor;
-                        this.frame7Score.ForeColor = (game.GetFrame(7).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(7).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(7).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame8_Ball1.Enabled = true;
-                            this.frame8_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame7_Ball2.Enabled = true;
-                            this.frame7_Ball2.Select();
-                        }
-                        // this.frame7_Ball2.Enabled = !(game.Frame7.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 8:
-                        this.frame6Score.Text = game.GetFrame(6).Score.ToString();
-                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
-                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
-                        this.frame8Score.BackColor = this.frame8Score.BackColor;
-                        this.frame8Score.ForeColor = (game.GetFrame(8).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(8).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(8).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame9_Ball1.Enabled = true;
-                            this.frame9_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame8_Ball2.Enabled = true;
-                            this.frame8_Ball2.Select();
-                        }
-                        // this.frame8_Ball2.Enabled = !(game.Frame8.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 9:
-                        this.frame7Score.Text = game.GetFrame(7).Score.ToString();
-                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
-                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
-                        this.frame9Score.BackColor = this.frame9Score.BackColor;
-                        this.frame9Score.ForeColor = (game.GetFrame(9).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(9).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(9).SecondBall.MarkType != eMarkType.NotThrown)
-                        {
-                            this.frame10_Ball1.Enabled = true;
-                            this.frame10_Ball1.Select();
-                        }
-                        else
-                        {
-                            this.frame9_Ball2.Enabled = true;
-                            this.frame9_Ball2.Select();
-                        }
-                        // this.frame9_Ball2.Enabled = !(game.Frame9.FirstBall.MarkType == eMarkType.Strike);
-                        break;
-                    case 10:
-                        this.frame8Score.Text = game.GetFrame(8).Score.ToString();
-                        this.frame9Score.Text = game.GetFrame(9).Score.ToString();
-                        this.frame10Score.Text = game.GetFrame(10).Score.ToString();
-                        this.frame10Score.BackColor = this.frame10Score.BackColor;
-                        this.frame10Score.ForeColor = (game.GetFrame(10).IsScoringComplete) ? Color.Black : Color.Gray;
-                        if (game.GetFrame(10).FirstBall.MarkType != eMarkType.NotThrown && game.GetFrame(10).SecondBall.MarkType == eMarkType.NotThrown)
-                        {
-                            this.frame10_Ball2.Enabled = true;
-                            this.frame10_Ball2.Select();
-                        }
-                        else
-                        {
-                            if (game.GetFrame(10).FirstBall.MarkType == eMarkType.Strike || game.GetFrame(10).SecondBall.MarkType == eMarkType.Spare)
-                            { // check to ensure we are supposed to be on the third ball
-                                this.frame10_Ball3.Enabled = true;
-                                this.frame10_Ball3.Select();
-                            }
-                            else
-                                throw new Exception("The game is over! Your final Score is " + game.TotalScore.ToString());
-                        }
-                        // this.frame10_Ball3.Enabled = !(game.Frame10.SecondBall.MarkType == eMarkType.Open);
-                        break;
+                    if (currFrame.FirstBall.MarkType == eMarkType.Strike || currFrame.SecondBall.MarkType != eMarkType.NotThrown)
+                        nextBall = Controls.Find("frame" + (currFrame.Number + 1).ToString() + "_Ball1", true)[0] as TextBox;
+                    else
+                        nextBall = Controls.Find("frame" + currFrame.Number.ToString() + "_Ball2", true)[0] as TextBox;
                 }
+
+                nextBall.Enabled = true;
+                nextBall.Select();
             }
             catch (Exception ex)
             {
@@ -808,7 +635,7 @@ namespace BowlingScoreCalculator
         private string ValidateText(string ballText, Frame currFrame, int ballNumber)
         {
             int ballValue;
-            if (ballText == "x")
+            if (ballText.ToLower() == "x")
             {
                 if (ballNumber != 1 && currFrame.Number != 10)
                     throw new Exception("Please enter a valid score");
@@ -818,8 +645,10 @@ namespace BowlingScoreCalculator
                     throw new Exception("Please enter a valid score");
                 ballText = "X";
             }
-            else if (ballText == "0")
+            else if (ballText == "0" || ballText == "-")
                 ballText = "-";
+            else if (ballText == "f")
+                ballText = "F";
             else if (ballText == "/")
             {
                 if (ballNumber == 1)
@@ -838,9 +667,9 @@ namespace BowlingScoreCalculator
                 {
                     if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue == 10)
                         ballText = "/";
-                    else if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue > 10)
+                    else if (ballNumber == 2 && currFrame.FirstBall.Value + ballValue > 10 && currFrame.FirstBall.MarkType != eMarkType.Strike)
                         throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
-                    if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.Value + ballValue == 10)
+                    if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.MarkType != eMarkType.Spare && currFrame.SecondBall.Value + ballValue == 10)
                         ballText = "/";
                     else if (ballNumber == 3 && currFrame.Number == 10 && currFrame.SecondBall.Value + ballValue > 10)
                         throw new Exception("You have entered a number higher than the remaining number of pins. Please enter a valid score");
